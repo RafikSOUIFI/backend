@@ -1,49 +1,48 @@
 const mysql = require('mysql2');
-const HOST = process.env.HOST;
-const USER = process.env.USER;
-const PASSWORD = process.env.PASSWORD;
-const DATABASE = process.env.DATABASE;
+const urlDB = `mysql://${process.env.USER}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DATABASE}?connectionLimit=20`;
 
-  const urlDB=`mysql://${process.env.USER}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DATABASE}`
-const connection = mysql.createConnection(urlDB)
-connection.connect((err)=>{
-    if (err) {
-        console.log(err)
-    }
-    else {
-        console.log("Database connected")
-    }
-})
+const pool = mysql.createPool(urlDB);
+const connection = pool.promise();
 
-//devices
-const getAllItems = (callback) => {
-    const sql ="SELECT * FROM items"
-    connection.query(sql,(err,results)=>{
-        callback(err,results)
-    })
-};
+connection
+  .execute('SELECT 1')
+  .then(() => {
+    console.log('Database connected');
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
-const getOne = (callback,data) =>{
-    const sql='SELECT * FROM items WHERE id = ?'
-    connection.query(sql,data,(err,results)=>{
-        callback(err,results)
-    })
-}
-
-
-const updateOne = (callback,data) =>{
-    const sql='update product set ? where id=?'
-    connection.query(sql,data,(err,results)=>{
-        callback(err,results)
-    })
-}
-
-const addOne = (callback,data) =>{
-    const sql='INSERT INTO items set ?'
-    connection.query(sql,data,(err,results)=>{
-        callback(err,results)
-    })
-}
-
-
-module.exports= { getAllItems,getOne, connection, updateOne, addOne};
+const getAllItems = () => {
+    const sql = 'SELECT * FROM items';
+    return pool.promise().query(sql)
+      .then(([rows, fields]) => {
+        return rows;
+      })
+      .catch((err) => {
+        throw err;
+      });
+  };
+  
+  const getOne = (data) => {
+    const sql = 'SELECT * FROM items WHERE id = ?';
+    return pool.promise().query(sql, data)
+    .then(([rows, fields]) => {
+        return rows;
+      })
+      .catch((err) => {
+        throw err;
+      });
+  };
+  
+  const updateOne = (data) => {
+    const sql = 'UPDATE items SET ? WHERE id = ?';
+    return pool.promise().query(sql, data);
+  };
+  
+  const addOne = (data) => {
+    const sql = 'INSERT INTO items SET ?';
+    return pool.promise().query(sql, data);
+  };
+  
+module.exports = { getAllItems, getOne, updateOne, addOne };
