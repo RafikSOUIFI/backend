@@ -45,4 +45,4 @@ const getAllItems = () => {
     return pool.promise().query(sql, data);
   };
   
-module.exports = { getAllItems, getOne, updateOne, addOne };
+module.exports = { getAllItems, getOne, updateOne, addOne, connection};
