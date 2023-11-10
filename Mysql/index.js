@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-const urlDB = `mysql://${process.env.USER}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DATABASE}?connectionLimit=20`;
+const urlDB= process.env.DATABASE_URL
 
 const pool = mysql.createPool(urlDB);
 const connection = pool.promise();
